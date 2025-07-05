@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absolute Cinema - Your Personal Watchlist</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --secondary-color: #a29bfe;
+      --dark-bg: #1a1a2e;
+      --card-bg: #16213e;
+      --text-color: #f1f1f1;
+      --accent-movie: #ff6b6b;
+      --accent-anime: #00cec9;
+      --accent-series: #fdcb6e;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      min-height: 100vh;
+    }
+    
+    header {
+      background-color: rgba(26, 26, 46, 0.95);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    
+    .search-container {
+      display: flex;
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border: none;
+      border-radius: 25px 0 0 25px;
+      background-color: #2d3748;
+      color: var(--text-color);
+      font-size: 1rem;
+      outline: none;
+    }
+    
+    .search-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0 1.5rem;
+      border-radius: 0 25px 25px 0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .search-btn:hover {
+      background-color: #5649c0;
+    }
+    
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .tab {
+      padding: 0.6rem 1.2rem;
+      background-color: #2d3748;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .tab.active {
+      background-color: var(--primary-color);
+    }
+    
+    .tab:hover:not(.active) {
+      background-color: #3d4a5c;
+    }
+    
+    .tab[data-type="movie"] {
+      border-bottom: 3px solid var(--accent-movie);
+    }
+    
+    .tab[data-type="anime"] {
+      border-bottom: 3px solid var(--accent-anime);
+    }
+    
+    .tab[data-type="series"] {
+      border-bottom: 3px solid var(--accent-series);
+    }
+    
+    main {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      margin: 1.5rem 0 1rem;
+      color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    @media (min-width: 640px) {
+      .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+    }
+    
+    .media-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    
+    .media-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .media-img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .media-info {
+      padding: 0.8rem;
+    }
+    
+    .media-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .media-year {
+      font-size: 0.8rem;
+      color: #a0aec0;
+    }
+    
+    .media-type {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 0.3rem 0.6rem;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    
+    .media-type.movie {
+      background-color: var(--accent-movie);
+    }
+    
+    .media-type.anime {
+      background-color: var(--accent-anime);
+    }
+    
+    .media-type.series {
+      background-color: var(--accent-series);
+    }
+    
+    .add-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .add-btn:hover {
+      background-color: #5649c0;
+    }
+    
+    .remove-btn {
+      background-color: #e53e3e;
+    }
+    
+    .remove-btn:hover {
+      background-color: #c53030;
+    }
+    
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+      display: none;
+    }
+    
+    .search-results.active {
+      display: block;
+    }
+    
+    .search-item {
+      display: flex;
+      padding: 0.8rem;
+      border-bottom: 1px solid #2d3748;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .search-item:hover {
+      background-color: #2d3748;
+    }
+    
+    .search-item-img {
+      width: 50px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-right: 1rem;
+    }
+    
+    .search-item-info {
+      flex: 1;
+    }
+    
+    .search-item-title {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    
+    .search-item-details {
+      font-size: 0.8rem;
+      color: #a0aec0;
+    }
+    
+    .search-item-add {
+      align-self: center;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .search-item-add:hover {
+      background-color: #5649c0;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #a0aec0;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+    
+    .empty-state p {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .recommendations {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #2d3748;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    
+    .modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal-content {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    .modal-header {
+      padding: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .modal-img {
+      width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .modal-details {
+      color: #a0aec0;
+      margin-bottom: 1rem;
+    }
+    
+    .modal-body {
+      padding: 0 1.5rem 1.5rem;
+    }
+    
+    .modal-description {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .modal-btn {
+      flex: 1;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    
+    .add-to-list {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .add-to-list:hover {
+      background-color: #5649c0;
+    }
+    
+    .mark-watched {
+      background-color: #2d3748;
+      color: var(--text-color);
+    }
+    
+    .mark-watched:hover {
+      background-color: #3d4a5c;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    @media (max-width: 640px) {
+      .logo {
+        font-size: 1.5rem;
+      }
+      
+      .search-input {
+        padding: 0.6rem 1rem;
+      }
+      
+      .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+      }
+      
+      .section-title {
+        font-size: 1.3rem;
+      }
+      
+      .modal-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .modal-img {
+        width: 150px;
+        height: 225px;
+      }
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      margin-right: 0.5rem;
+    }
+    
+    .badge.movie {
+      background-color: var(--accent-movie);
+    }
+    
+    .badge.anime {
+      background-color: var(--accent-anime);
+    }
+    
+    .badge.series {
+      background-color: var(--accent-series);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+      gap: 0.5rem;
+    }
+
+    .pagination-btn {
+      padding: 0.5rem 1rem;
+      background-color: #2d3748;
+      border: none;
+      border-radius: 5px;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: var(--primary-color);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-current {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      border-radius: 5px;
+      color: white;
+    }
+
+    .discover-section {
+      margin-top: 2rem;
+    }
+
+    .category-tabs {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .category-tab {
+      padding: 0.5rem 1rem;
+      background-color: #2d3748;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+    }
+
+    .category-tab.active {
+      background-color: var(--primary-color);
+    }
+
+    .category-tab:hover:not(.active) {
+      background-color: #3d4a5c;
+    }
+
+    /* Hide scrollbar for category tabs */
+    .category-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .category-tabs {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Absolute Cinema</div>
+    <div class="search-container">
+      <input type="text" class="search-input" placeholder="Search for movies, anime, or series...">
+      <button class="search-btn"><i class="fas fa-search"></i></button>
+      <div class="search-results"></div>
+    </div>
+  </header>
+  
+  <main>
+    <div class="tabs">
+      <div class="tab active" data-view="all">All</div>
+      <div class="tab" data-view="watchlist">My Watchlist</div>
+      <div class="tab" data-view="watched">Watched</div>
+      <div class="tab" data-type="movie">Movies</div>
+      <div class="tab" data-type="anime">Anime</div>
+      <div class="tab" data-type="series">Web Series</div>
+    </div>
+    
+    <section id="watchlist-section">
+      <h2 class="section-title"><i class="fas fa-list"></i> My Watchlist</h2>
+      <div class="content-grid" id="watchlist-grid"></div>
+    </section>
+    
+    <section id="discover-section" class="discover-section">
+      <h2 class="section-title"><i class="fas fa-compass"></i> Discover Movies</h2>
+      <div class="category-tabs" id="category-tabs">
+        <div class="category-tab active" data-category="popular">Popular</div>
+        <div class="category-tab" data-category="top_rated">Top Rated</div>
+        <div class="category-tab" data-category="now_playing">Now Playing</div>
+        <div class="category-tab" data-category="upcoming">Upcoming</div>
+        <div class="category-tab" data-category="action">Action</div>
+        <div class="category-tab" data-category="comedy">Comedy</div>
+        <div class="category-tab" data-category="drama">Drama</div>
+        <div class="category-tab" data-category="horror">Horror</div>
+        <div class="category-tab" data-category="romance">Romance</div>
+        <div class="category-tab" data-category="science_fiction">Sci-Fi</div>
+        <div class="category-tab" data-category="thriller">Thriller</div>
+        <div class="category-tab" data-category="animation">Animation</div>
+      </div>
+      <div class="content-grid" id="discover-grid"></div>
+      <div class="loading" id="discover-loading">
+        <div class="loading-spinner"></div>
+      </div>
+      <div class="pagination" id="discover-pagination">
+        <button class="pagination-btn" id="prev-page" disabled><i class="fas fa-chevron-left"></i></button>
+        <div class="pagination-current" id="current-page">1</div>
+        <button class="pagination-btn" id="next-page"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </section>
+    
+    <section id="recommendations-section" class="recommendations">
+      <h2 class="section-title"><i class="fas fa-star"></i> Recommended For You</h2>
+      <div class="content-grid" id="recommendations-grid"></div>
+    </section>
+  </main>
+  
+  <div class="modal" id="details-modal">
+    <div class="modal-content">
+      <button class="modal-close"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <img src="" alt="" class="modal-img">
+        <div>
+          <h3 class="modal-title"></h3>
+          <p class="modal-details"></p>
+          <div class="modal-badges"></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description"></p>
+        <div class="modal-actions">
+          <button class="modal-btn add-to-list">Add to Watchlist</button>
+          <button class="modal-btn mark-watched">Mark as Watched</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <script>
+    (function() {
+      const popup = document.createElement("div");
+      popup.innerHTML = "Generated by <strong>GenZai.in</strong>";
+      Object.assign(popup.style, {
+        position: "fixed",
+        bottom: "20px",
+        left: "20px",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        color: "#fff",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        fontSize: "14px",
+        zIndex: "1000",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+        opacity: "0",
+        transform: "translateY(10px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease"
+      });
+
+      document.body.appendChild(popup);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        popup.style.opacity = "1";
+        popup.style.transform = "translateY(0)";
+      });
+
+      // Optional: Auto-hide after 5 seconds
+      setTimeout(() => {
+        popup.style.opacity = "0";
+        popup.style.transform = "translateY(10px)";
+        setTimeout(() => popup.remove(), 500);
+      }, 5000);
+    })();
+  </script>
+  
+  <script>
+    // TMDB API Configuration
+    const TMDB_API_KEY = 'api_key=3fd2be6f0c70a2a598f084ddfb75487c'; // This is a public API key for demo purposes
+    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+    const TMDB_PLACEHOLDER_IMAGE = 'https://via.placeholder.com/500x750?text=No+Image+Available';
+    
+    // Genre mapping for TMDB
+    const TMDB_GENRES = {
+      28: 'Action',
+      12: 'Adventure',
+      16: 'Animation',
+      35: 'Comedy',
+      80: 'Crime',
+      99: 'Documentary',
+      18: 'Drama',
+      10751: 'Family',
+      14: 'Fantasy',
+      36: 'History',
+      27: 'Horror',
+      10402: 'Music',
+      9648: 'Mystery',
+      10749: 'Romance',
+      878: 'Science Fiction',
+      10770: 'TV Movie',
+      53: 'Thriller',
+      10752: 'War',
+      37: 'Western'
+    };
+    
+    // Category to endpoint mapping
+    const CATEGORY_ENDPOINTS = {
+      popular: '/movie/popular',
+      top_rated: '/movie/top_rated',
+      now_playing: '/movie/now_playing',
+      upcoming: '/movie/upcoming',
+      action: '/discover/movie?with_genres=28',
+      comedy: '/discover/movie?with_genres=35',
+      drama: '/discover/movie?with_genres=18',
+      horror: '/discover/movie?with_genres=27',
+      romance: '/discover/movie?with_genres=10749',
+      science_fiction: '/discover/movie?with_genres=878',
+      thriller: '/discover/movie?with_genres=53',
+      animation: '/discover/movie?with_genres=16'
+    };
+    
+    // Sample data for anime and web series (since TMDB focuses on movies)
+    const sampleData = {
+      anime: [
+        {
+          id: 'a1',
+          title: 'Attack on Titan',
+          year: 2013,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BNzc5MTczNDQtNDFjNi00ZDU5LWFkNzItOTE1NzQzMzdhNzMxXkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_.jpg',
+          description: 'After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.',
+          genres: ['Action', 'Adventure', 'Drama'],
+          rating: 9.0
+        },
+        {
+          id: 'a2',
+          title: 'Death Note',
+          year: 2006,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BNjRiNmNjMmMtN2U2Yi00ODgxLTk3OTMtMmI1MTI1NjYyZTEzXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg',
+          description: 'An intelligent high school student goes on a secret crusade to eliminate criminals from the world after discovering a notebook capable of killing anyone whose name is written into it.',
+          genres: ['Mystery', 'Psychological', 'Supernatural'],
+          rating: 8.9
+        },
+        {
+          id: 'a3',
+          title: 'Fullmetal Alchemist: Brotherhood',
+          year: 2009,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZmEzN2YzOTItMDI5MS00MGU4LWI1NWQtOTg5ZThhNGQwYTEzXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_.jpg',
+          description: 'Two brothers search for a Philosopher\'s Stone after an attempt to revive their deceased mother goes wrong and leaves them in damaged physical forms.',
+          genres: ['Action', 'Adventure', 'Drama'],
+          rating: 9.1
+        },
+        {
+          id: 'a4',
+          title: 'One Punch Man',
+          year: 2015,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BMTNmZDE2NDEtNTg3MS00OTE1LThlZGUtOGZkZTg0NTUyNGVmXkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_.jpg',
+          description: 'The story of Saitama, a hero who can defeat any opponent with a single punch but seeks to find a worthy opponent after growing bored by a lack of challenge.',
+          genres: ['Action', 'Comedy'],
+          rating: 8.7
+        },
+        {
+          id: 'a5',
+          title: 'My Hero Academia',
+          year: 2016,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BOGZmYjdjN2UtNjAwZi00YmEyLWFhNTEtNjM1OTc5ODg0MGEyXkEyXkFqcGdeQXVyMTA1NjQyNjkw._V1_.jpg',
+          description: 'A superhero-loving boy without any powers is determined to enroll in a prestigious hero academy and learn what it really means to be a hero.',
+          genres: ['Action', 'Adventure'],
+          rating: 8.4
+        },
+        {
+          id: 'a6',
+          title: 'Demon Slayer',
+          year: 2019,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZjZjNzI5MDctY2Y4YS00NmM4LTljMmItZTFkOTExNGI3ODRhXkEyXkFqcGdeQXVyNjc3MjQzNTI@._V1_.jpg',
+          description: 'A family is attacked by demons and only two members survive - Tanjiro and his sister Nezuko, who is turning into a demon slowly. Tanjiro sets out to become a demon slayer to avenge his family and cure his sister.',
+          genres: ['Action', 'Fantasy', 'Adventure'],
+          rating: 8.7
+        },
+        {
+          id: 'a7',
+          title: 'Jujutsu Kaisen',
+          year: 2020,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BNzQyYzU3Y2MtOWY2Yy00ZGM2LTg3ZTUtMDJkZTJiMmEzMjYxXkEyXkFqcGdeQXVyMTI2NTY3NDg5._V1_.jpg',
+          description: 'A boy swallows a cursed talisman - the finger of a demon - and becomes cursed himself. He enters a shaman school to be able to locate the demon\'s other body parts and thus exorcise himself.',
+          genres: ['Action', 'Fantasy'],
+          rating: 8.6
+        },
+        {
+          id: 'a8',
+          title: 'Hunter x Hunter',
+          year: 2011,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZjNmZDhkN2QtNDYyZC00YzJmLTg0ODUtN2FjNjhhMzE3ZmUxXkEyXkFqcGdeQXVyNjc2NjA5MTU@._V1_.jpg',
+          description: 'Gon Freecss aspires to become a Hunter, an exceptional being capable of greatness. With his friends and his potential, he seeks for his father who left him when he was younger.',
+          genres: ['Action', 'Adventure', 'Fantasy'],
+          rating: 9.0
+        },
+        {
+          id: 'a9',
+          title: 'Steins;Gate',
+          year: 2011,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BMjUxMzE4ZDctODNjMS00MzIwLThjNDktODkwYjc5YWU0MDc0XkEyXkFqcGdeQXVyNjc3OTE4Nzk@._V1_.jpg',
+          description: 'A group of friends create a device that can send text messages to the past, but their experiments start to have dangerous consequences.',
+          genres: ['Drama', 'Sci-Fi', 'Thriller'],
+          rating: 8.8
+        },
+        {
+          id: 'a10',
+          title: 'Cowboy Bebop',
+          year: 1998,
+          type: 'anime',
+          poster: 'https://m.media-amazon.com/images/M/MV5BNGNlNjBkODEtZThlOC00YzUxLWI0MjMtMjk3YzJmMDFlNWZlXkEyXkFqcGdeQXVyNjI0MDg2NzE@._V1_.jpg',
+          description: 'The futuristic misadventures and tragedies of an easygoing bounty hunter and his partners.',
+          genres: ['Action', 'Adventure', 'Drama'],
+          rating: 8.9
+        }
+      ],
+      series: [
+        {
+          id: 's1',
+          title: 'Breaking Bad',
+          year: 2008,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BYmQ4YWMxYjUtNjZmYi00MDQ1LWFjMjMtNjA5ZDdiYjdiODU5XkEyXkFqcGdeQXVyMTMzNDExODE5._V1_.jpg',
+          description: 'A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family\'s future.',
+          genres: ['Crime', 'Drama', 'Thriller'],
+          rating: 9.5
+        },
+        {
+          id: 's2',
+          title: 'Game of Thrones',
+          year: 2011,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BYTRiNDQwYzAtMzVlZS00NTI5LWJjYjUtMzkwNTUzMWMxZTllXkEyXkFqcGdeQXVyNDIzMzcwNjc@._V1_.jpg',
+          description: 'Nine noble families fight for control over the lands of Westeros, while an ancient enemy returns after being dormant for millennia.',
+          genres: ['Action', 'Adventure', 'Drama'],
+          rating: 9.2
+        },
+        {
+          id: 's3',
+          title: 'Stranger Things',
+          year: 2016,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BMDZkYmVhNjMtNWU4MC00MDQxLWE3MjYtZGMzZWI1ZjhlOWJmXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg',
+          description: 'When a young boy disappears, his mother, a police chief, and his friends must confront terrifying supernatural forces in order to get him back.',
+          genres: ['Drama', 'Fantasy', 'Horror'],
+          rating: 8.7
+        },
+        {
+          id: 's4',
+          title: 'The Office',
+          year: 2005,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BMDNkOTE4NDQtMTNmYi00MWE0LWE4ZTktYTc0NzhhNWIzNzJiXkEyXkFqcGdeQXVyMzQ2MDI5NjU@._V1_.jpg',
+          description: 'A mockumentary on a group of typical office workers, where the workday consists of ego clashes, inappropriate behavior, and tedium.',
+          genres: ['Comedy'],
+          rating: 8.9
+        },
+        {
+          id: 's5',
+          title: 'The Mandalorian',
+          year: 2019,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZjRlMzM3N2MtOTZiZC00NzQ4LWI2NDMtZmZiYjc3MTY2MzY0XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_.jpg',
+          description: 'The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic.',
+          genres: ['Action', 'Adventure', 'Sci-Fi'],
+          rating: 8.7
+        },
+        {
+          id: 's6',
+          title: 'The Crown',
+          year: 2016,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZmY0MzBlNjctNTRmNy00Njk3LWFjMzctMWQwZDAwMGJmY2MyXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_.jpg',
+          description: 'Follows the political rivalries and romance of Queen Elizabeth II\'s reign and the events that shaped the second half of the twentieth century.',
+          genres: ['Biography', 'Drama', 'History'],
+          rating: 8.7
+        },
+        {
+          id: 's7',
+          title: 'The Witcher',
+          year: 2019,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BN2FiOWU4YzYtMzZiOS00MzcyLTlkOGEtOTgwZmEwMzAxMzA3XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg',
+          description: 'Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world where people often prove more wicked than beasts.',
+          genres: ['Action', 'Adventure', 'Fantasy'],
+          rating: 8.2
+        },
+        {
+          id: 's8',
+          title: 'Succession',
+          year: 2018,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZTY0YjU0NTUtMGRmNS00NDMyLWI2MzYtNjM2MmM2Y2VmODliXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg',
+          description: 'The Roy family is known for controlling the biggest media and entertainment company in the world. However, their world changes when their father steps down from the company.',
+          genres: ['Drama'],
+          rating: 8.8
+        },
+        {
+          id: 's9',
+          title: 'Better Call Saul',
+          year: 2015,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZDA4YmE0OTYtMmRmNS00Mzk2LTlhM2MtNjk4NzBjZGE1MmIyXkEyXkFqcGdeQXVyMTMzNDExODE5._V1_.jpg',
+          description: 'The trials and tribulations of criminal lawyer Jimmy McGill before his fateful run-in with Walter White and Jesse Pinkman.',
+          genres: ['Crime', 'Drama'],
+          rating: 8.9
+        },
+        {
+          id: 's10',
+          title: 'Peaky Blinders',
+          year: 2013,
+          type: 'series',
+          poster: 'https://m.media-amazon.com/images/M/MV5BZjYzZDgzMmYtYjY5Zi00YTk1LThhMDYtNjFlNzM4MTZhYzgyXkEyXkFqcGdeQXVyMTE5NDQ1MzQ3._V1_.jpg',
+          description: 'A gangster family epic set in 1900s England, centering on a gang who sew razor blades in the peaks of their caps, and their fierce boss Tommy Shelby.',
+          genres: ['Crime', 'Drama'],
+          rating: 8.8
+        }
+      ]
+    };
+    
+    // Initialize local storage
+    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+    let watched = JSON.parse(localStorage.getItem('watched')) || [];
+    
+    // DOM elements
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-btn');
+    const searchResults = document.querySelector('.search-results');
+    const tabs = document.querySelectorAll('.tab');
+    const watchlistGrid = document.getElementById('watchlist-grid');
+    const recommendationsGrid = document.getElementById('recommendations-grid');
+    const discoverGrid = document.getElementById('discover-grid');
+    const discoverLoading = document.getElementById('discover-loading');
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const currentPageEl = document.getElementById('current-page');
+    const modal = document.getElementById('details-modal');
+    const toast = document.getElementById('toast');
+    
+    // Current state
+    let currentView = 'all';
+    let currentType = null;
+    let currentCategory = 'popular';
+    let currentPage = 1;
+    let totalPages = 1;
+    let discoverMovies = [];
+    
+    // Initialize the app
+    function init() {
+      renderWatchlist();
+      fetchDiscoverMovies();
+      renderRecommendations();
+      setupEventListeners();
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      // Search functionality
+      searchInput.addEventListener('input', handleSearch);
+      searchBtn.addEventListener('click', () => {
+        if (searchInput.value.trim()) {
+          handleSearch();
+        }
+      });
+      
+      // Hide search results when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!searchResults.contains(e.target) && e.target !== searchInput && e.target !== searchBtn) {
+          searchResults.classList.remove('active');
+        }
+      });
+      
+      // Tab switching
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          if (tab.dataset.view) {
+            currentView = tab.dataset.view;
+            currentType = null;
+          } else if (tab.dataset.type) {
+            currentView = 'filtered';
+            currentType = tab.dataset.type;
+          }
+          
+          renderWatchlist();
+        });
+      });
+      
+      // Category tab switching
+      categoryTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          categoryTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCategory = tab.dataset.category;
+          currentPage = 1;
+          currentPageEl.textContent = currentPage;
+          prevPageBtn.disabled = currentPage === 1;
+          fetchDiscoverMovies();
+        });
+      });
+      
+      // Pagination
+      prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          currentPageEl.textContent = currentPage;
+          prevPageBtn.disabled = currentPage === 1;
+          fetchDiscoverMovies();
+        }
+      });
+      
+      nextPageBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          currentPageEl.textContent = currentPage;
+          prevPageBtn.disabled = currentPage === 1;
+          fetchDiscoverMovies();
+        }
+      });
+      
+      // Modal close button
+      document.querySelector('.modal-close').addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+      
+      // Close modal when clicking outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+      
+      // Add to watchlist button in modal
+      document.querySelector('.add-to-list').addEventListener('click', () => {
+        const mediaId = modal.dataset.mediaId;
+        const mediaType = modal.dataset.mediaType;
+        
+        let media;
+        if (mediaType === 'tmdb') {
+          media = discoverMovies.find(item => item.id.toString() === mediaId);
+        } else if (mediaType === 'anime') {
+          media = sampleData.anime.find(item => item.id === mediaId);
+        } else if (mediaType === 'series') {
+          media = sampleData.series.find(item => item.id === mediaId);
+        }
+        
+        if (media) {
+          addToWatchlist(media);
+          modal.classList.remove('active');
+        }
+      });
+      
+      // Mark as watched button in modal
+      document.querySelector('.mark-watched').addEventListener('click', () => {
+        const mediaId = modal.dataset.mediaId;
+        const mediaType = modal.dataset.mediaType;
+        
+        let media;
+        if (mediaType === 'tmdb') {
+          media = discoverMovies.find(item => item.id.toString() === mediaId);
+        } else if (mediaType === 'anime') {
+          media = sampleData.anime.find(item => item.id === mediaId);
+        } else if (mediaType === 'series') {
+          media = sampleData.series.find(item => item.id === mediaId);
+        }
+        
+        if (media) {
+          markAsWatched(media);
+          modal.classList.remove('active');
+        }
+      });
+    }
+    
+    // Handle search input
+    function handleSearch() {
+      const query = searchInput.value.trim().toLowerCase();
+      
+      if (query.length < 2) {
+        searchResults.classList.remove('active');
+        return;
+      }
+      
+      // Show loading state
+      searchResults.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+        </div>
+      `;
+      searchResults.classList.add('active');
+      
+      // Search TMDB API
+      fetch(`${TMDB_BASE_URL}/search/movie?${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=1`)
+        .then(response => response.json())
+        .then(data => {
+          const tmdbResults = data.results.slice(0, 5).map(movie => ({
+            id: movie.id,
+            title: movie.title,
+            year: movie.release_date ? new Date(movie.release_date).getFullYear() : 'Unknown',
+            type: 'movie',
+            poster: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : TMDB_PLACEHOLDER_IMAGE,
+            description: movie.overview || 'No description available.',
+            genres: movie.genre_ids ? movie.genre_ids.map(id => TMDB_GENRES[id] || 'Unknown').filter(genre => genre !== 'Unknown') : [],
+            rating: movie.vote_average || 0,
+            tmdb: true
+          }));
+          
+          // Search local anime and series data
+          const animeResults = sampleData.anime
+            .filter(item => item.title.toLowerCase().includes(query))
+            .slice(0, 2);
+          
+          const seriesResults = sampleData.series
+            .filter(item => item.title.toLowerCase().includes(query))
+            .slice(0, 2);
+          
+          // Combine results
+          const results = [...tmdbResults, ...animeResults, ...seriesResults];
+          
+          if (results.length > 0) {
+            renderSearchResults(results);
+          } else {
+            searchResults.innerHTML = `<div class="search-item">No results found for "${query}"</div>`;
+          }
+        })
+        .catch(error => {
+          console.error('Search error:', error);
+          searchResults.innerHTML = `<div class="search-item">Error searching. Please try again.</div>`;
+        });
+    }
+    
+    // Render search results
+    function renderSearchResults(results) {
+      searchResults.innerHTML = '';
+      
+      results.forEach(item => {
+        const isInWatchlist = watchlist.some(media => 
+          media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+        );
+        const isWatched = watched.some(media => 
+          media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+        );
+        
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-item';
+        resultItem.innerHTML = `
+          <img src="${item.poster}" alt="${item.title}" class="search-item-img" onerror="this.src='${TMDB_PLACEHOLDER_IMAGE}'">
+          <div class="search-item-info">
+            <div class="search-item-title">${item.title}</div>
+            <div class="search-item-details">
+              <span class="badge ${item.type}">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
+              ${item.year} • ${item.rating.toFixed(1)}/10
+            </div>
+          </div>
+          <button class="search-item-add ${isInWatchlist || isWatched ? 'remove-btn' : ''}">
+            <i class="fas ${isInWatchlist ? 'fa-check' : isWatched ? 'fa-eye' : 'fa-plus'}"></i>
+          </button>
+        `;
+        
+        // Add click event to show details
+        resultItem.addEventListener('click', (e) => {
+          if (!e.target.closest('.search-item-add')) {
+            showMediaDetails(item, item.tmdb ? 'tmdb' : item.type);
+            searchResults.classList.remove('active');
+          }
+        });
+        
+        // Add/remove from watchlist
+        const addButton = resultItem.querySelector('.search-item-add');
+        addButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          if (isInWatchlist) {
+            removeFromWatchlist(item);
+          } else if (isWatched) {
+            removeFromWatched(item);
+          } else {
+            addToWatchlist(item);
+          }
+          
+          searchResults.classList.remove('active');
+        });
+        
+        searchResults.appendChild(resultItem);
+      });
+    }
+    
+    // Fetch discover movies from TMDB
+    function fetchDiscoverMovies() {
+      discoverLoading.style.display = 'flex';
+      discoverGrid.innerHTML = '';
+      
+      let endpoint = CATEGORY_ENDPOINTS[currentCategory] || '/movie/popular';
+      
+      fetch(`${TMDB_BASE_URL}${endpoint}?${TMDB_API_KEY}&page=${currentPage}`)
+        .then(response => response.json())
+        .then(data => {
+          totalPages = Math.min(data.total_pages, 500); // TMDB API limits to 500 pages
+          nextPageBtn.disabled = currentPage >= totalPages;
+          
+          discoverMovies = data.results.map(movie => ({
+            id: movie.id,
+            title: movie.title,
+            year: movie.release_date ? new Date(movie.release_date).getFullYear() : 'Unknown',
+            type: 'movie',
+            poster: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : TMDB_PLACEHOLDER_IMAGE,
+            description: movie.overview || 'No description available.',
+            genres: movie.genre_ids ? movie.genre_ids.map(id => TMDB_GENRES[id] || 'Unknown').filter(genre => genre !== 'Unknown') : [],
+            rating: movie.vote_average || 0,
+            tmdb: true
+          }));
+          
+          renderDiscoverMovies();
+          discoverLoading.style.display = 'none';
+        })
+        .catch(error => {
+          console.error('Discover error:', error);
+          discoverGrid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>Error loading movies</p>
+              <span>Please try again later</span>
+            </div>
+          `;
+          discoverLoading.style.display = 'none';
+        });
+    }
+    
+    // Render discover movies
+    function renderDiscoverMovies() {
+      discoverGrid.innerHTML = '';
+      
+      if (discoverMovies.length === 0) {
+        discoverGrid.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-film"></i>
+            <p>No movies found</p>
+            <span>Try a different category or page</span>
+          </div>
+        `;
+        return;
+      }
+      
+      discoverMovies.forEach(movie => {
+        const mediaCard = createMediaCard(movie, true, 'tmdb');
+        discoverGrid.appendChild(mediaCard);
+      });
+    }
+    
+    // Render watchlist
+    function renderWatchlist() {
+      watchlistGrid.innerHTML = '';
+      
+      let mediaToShow = [];
+      
+      if (currentView === 'all') {
+        mediaToShow = watchlist;
+      } else if (currentView === 'watchlist') {
+        mediaToShow = watchlist;
+      } else if (currentView === 'watched') {
+        mediaToShow = watched;
+      } else if (currentView === 'filtered' && currentType) {
+        mediaToShow = watchlist.filter(item => item.type === currentType);
+      }
+      
+      if (mediaToShow.length === 0) {
+        watchlistGrid.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-film"></i>
+            <p>Your ${currentView === 'watched' ? 'watched list' : 'watchlist'} is empty</p>
+            <span>Search for movies, anime, or series to add them here</span>
+          </div>
+        `;
+        return;
+      }
+      
+      mediaToShow.forEach(item => {
+        const mediaCard = createMediaCard(item, false, item.tmdb ? 'tmdb' : item.type);
+        watchlistGrid.appendChild(mediaCard);
+      });
+    }
+    
+    // Render recommendations
+    function renderRecommendations() {
+      // Get genres from watchlist
+      const watchlistGenres = {};
+      watchlist.forEach(item => {
+        if (item.genres && Array.isArray(item.genres)) {
+          item.genres.forEach(genre => {
+            watchlistGenres[genre] = (watchlistGenres[genre] || 0) + 1;
+          });
+        }
+      });
+      
+      // Sort genres by frequency
+      const sortedGenres = Object.keys(watchlistGenres).sort((a, b) => 
+        watchlistGenres[b] - watchlistGenres[a]
+      );
+      
+      // If no watchlist items with genres, show random recommendations from discover movies
+      let recommendations = [];
+      
+      if (sortedGenres.length === 0 || discoverMovies.length === 0) {
+        // Combine anime and series for random recommendations
+        const animeAndSeries = [...sampleData.anime, ...sampleData.series];
+        recommendations = animeAndSeries
+          .filter(item => !watchlist.some(w => w.id === item.id) && !watched.some(w => w.id === item.id))
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 10);
+      } else {
+        // Get top genres
+        const topGenres = sortedGenres.slice(0, 3);
+        
+        // Find movies from discover that match top genres
+        const matchingMovies = discoverMovies
+          .filter(movie => 
+            !watchlist.some(w => w.tmdb && w.id === movie.id) && 
+            !watched.some(w => w.tmdb && w.id === movie.id) &&
+            movie.genres.some(genre => topGenres.includes(genre))
+          )
+          .sort((a, b) => {
+            // Count matching genres
+            const aMatches = a.genres.filter(genre => topGenres.includes(genre)).length;
+            const bMatches = b.genres.filter(genre => topGenres.includes(genre)).length;
+            
+            // Sort by matches, then by rating
+            return bMatches - aMatches || b.rating - a.rating;
+          })
+          .slice(0, 6);
+        
+        // Add some anime and series that match genres
+        const animeAndSeries = [...sampleData.anime, ...sampleData.series]
+          .filter(item => 
+            !watchlist.some(w => w.id === item.id) && 
+            !watched.some(w => w.id === item.id) &&
+            item.genres.some(genre => topGenres.includes(genre))
+          )
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 4);
+        
+        recommendations = [...matchingMovies, ...animeAndSeries];
+      }
+      
+      // If still not enough recommendations, add random discover movies
+      if (recommendations.length < 5 && discoverMovies.length > 0) {
+        const randomMovies = discoverMovies
+          .filter(movie => 
+            !watchlist.some(w => w.tmdb && w.id === movie.id) && 
+            !watched.some(w => w.tmdb && w.id === movie.id) &&
+            !recommendations.some(r => r.tmdb && r.id === movie.id)
+          )
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 10 - recommendations.length);
+        
+        recommendations = [...recommendations, ...randomMovies];
+      }
+      
+      // Render recommendations
+      recommendationsGrid.innerHTML = '';
+      
+      if (recommendations.length === 0) {
+        recommendationsGrid.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-star"></i>
+            <p>No recommendations available</p>
+            <span>Add more items to your watchlist to get personalized recommendations</span>
+          </div>
+        `;
+        return;
+      }
+      
+      recommendations.forEach(item => {
+        const mediaCard = createMediaCard(item, true, item.tmdb ? 'tmdb' : item.type);
+        recommendationsGrid.appendChild(mediaCard);
+      });
+    }
+    
+    // Create media card element
+    function createMediaCard(item, isRecommendation = false, mediaType = 'movie') {
+      const mediaCard = document.createElement('div');
+      mediaCard.className = 'media-card';
+      mediaCard.innerHTML = `
+        <img src="${item.poster}" alt="${item.title}" class="media-img" onerror="this.src='${TMDB_PLACEHOLDER_IMAGE}'">
+        <div class="media-type ${item.type}">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</div>
+        <div class="media-info">
+          <div class="media-title">${item.title}</div>
+          <div class="media-year">${item.year} • ${item.rating.toFixed(1)}/10</div>
+        </div>
+        <button class="add-btn ${!isRecommendation ? 'remove-btn' : ''}">
+          <i class="fas ${isRecommendation ? 'fa-plus' : watched.some(w => w.tmdb ? w.id === item.id && w.type === item.type : w.id === item.id) ? 'fa-eye' : 'fa-times'}"></i>
+        </button>
+      `;
+      
+      // Add click event to show details
+      mediaCard.addEventListener('click', (e) => {
+        if (!e.target.closest('.add-btn')) {
+          showMediaDetails(item, mediaType);
+        }
+      });
+      
+      // Add/remove button functionality
+      const addButton = mediaCard.querySelector('.add-btn');
+      addButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (isRecommendation) {
+          addToWatchlist(item);
+        } else if (watched.some(w => w.tmdb ? w.id === item.id && w.type === item.type : w.id === item.id)) {
+          removeFromWatched(item);
+        } else {
+          removeFromWatchlist(item);
+        }
+      });
+      
+      return mediaCard;
+    }
+    
+    // Show media details in modal
+    function showMediaDetails(item, mediaType = 'movie') {
+      const modalImg = modal.querySelector('.modal-img');
+      const modalTitle = modal.querySelector('.modal-title');
+      const modalDetails = modal.querySelector('.modal-details');
+      const modalBadges = modal.querySelector('.modal-badges');
+      const modalDescription = modal.querySelector('.modal-description');
+      const addToListBtn = modal.querySelector('.add-to-list');
+      const markWatchedBtn = modal.querySelector('.mark-watched');
+      
+      modalImg.src = item.poster;
+      modalImg.alt = item.title;
+      modalImg.onerror = () => { modalImg.src = TMDB_PLACEHOLDER_IMAGE; };
+      modalTitle.textContent = item.title;
+      modalDetails.textContent = `${item.year} • ${item.rating.toFixed(1)}/10`;
+      
+      modalBadges.innerHTML = '';
+      if (item.genres && Array.isArray(item.genres)) {
+        item.genres.forEach(genre => {
+          const badge = document.createElement('span');
+          badge.className = `badge ${item.type}`;
+          badge.textContent = genre;
+          modalBadges.appendChild(badge);
+        });
+      }
+      
+      modalDescription.textContent = item.description || 'No description available.';
+      
+      const isInWatchlist = watchlist.some(media => 
+        media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+      );
+      const isWatched = watched.some(media => 
+        media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+      );
+      
+      if (isInWatchlist) {
+        addToListBtn.textContent = 'Remove from Watchlist';
+        addToListBtn.classList.add('remove-btn');
+        addToListBtn.onclick = () => {
+          removeFromWatchlist(item);
+          modal.classList.remove('active');
+        };
+      } else {
+        addToListBtn.textContent = 'Add to Watchlist';
+        addToListBtn.classList.remove('remove-btn');
+        addToListBtn.onclick = () => {
+          addToWatchlist(item);
+          modal.classList.remove('active');
+        };
+      }
+      
+      if (isWatched) {
+        markWatchedBtn.textContent = 'Remove from Watched';
+        markWatchedBtn.onclick = () => {
+          removeFromWatched(item);
+          modal.classList.remove('active');
+        };
+      } else {
+        markWatchedBtn.textContent = 'Mark as Watched';
+        markWatchedBtn.onclick = () => {
+          markAsWatched(item);
+          modal.classList.remove('active');
+        };
+      }
+      
+      modal.dataset.mediaId = item.id;
+      modal.dataset.mediaType = mediaType;
+      modal.classList.add('active');
+    }
+    
+    // Add to watchlist
+    function addToWatchlist(item) {
+      const isAlreadyInWatchlist = watchlist.some(media => 
+        media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+      );
+      
+      if (!isAlreadyInWatchlist) {
+        watchlist.push(item);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        
+        // Remove from watched if it's there
+        removeFromWatched(item, false);
+        
+        showToast(`Added "${item.title}" to your watchlist`);
+        renderWatchlist();
+        renderRecommendations();
+      }
+    }
+    
+    // Remove from watchlist
+    function removeFromWatchlist(item, showNotification = true) {
+      watchlist = watchlist.filter(media => 
+        media.tmdb ? !(media.id === item.id && media.type === item.type) : media.id !== item.id
+      );
+      localStorage.setItem('watchlist', JSON.stringify(watchlist));
+      
+      if (showNotification) {
+        showToast(`Removed "${item.title}" from your watchlist`);
+      }
+      
+      renderWatchlist();
+      renderRecommendations();
+    }
+    
+    // Mark as watched
+    function markAsWatched(item) {
+      const isAlreadyWatched = watched.some(media => 
+        media.tmdb ? media.id === item.id && media.type === item.type : media.id === item.id
+      );
+      
+      if (!isAlreadyWatched) {
+        watched.push(item);
+        localStorage.setItem('watched', JSON.stringify(watched));
+        
+        // Remove from watchlist if it's there
+        removeFromWatchlist(item, false);
+        
+        showToast(`Marked "${item.title}" as watched`);
+        renderWatchlist();
+        renderRecommendations();
+      }
+    }
+    
+    // Remove from watched
+    function removeFromWatched(item, showNotification = true) {
+      watched = watched.filter(media => 
+        media.tmdb ? !(media.id === item.id && media.type === item.type) : media.id !== item.id
+      );
+      localStorage.setItem('watched', JSON.stringify(watched));
+      
+      if (showNotification) {
+        showToast(`Removed "${item.title}" from your watched list`);
+      }
+      
+      renderWatchlist();
+      renderRecommendations();
+    }
+    
+    // Show toast notification
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('active');
+      
+      setTimeout(() => {
+        toast.classList.remove('active');
+      }, 3000);
+    }
+    
+    // Get movie details from TMDB
+    function getMovieDetails(movieId) {
+      return fetch(`${TMDB_BASE_URL}/movie/${movieId}?${TMDB_API_KEY}`)
+        .then(response => response.json())
+        .then(movie => ({
+          id: movie.id,
+          title: movie.title,
+          year: movie.release_date ? new Date(movie.release_date).getFullYear() : 'Unknown',
+          type: 'movie',
+          poster: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : TMDB_PLACEHOLDER_IMAGE,
+          description: movie.overview || 'No description available.',
+          genres: movie.genres ? movie.genres.map(genre => genre.name) : [],
+          rating: movie.vote_average || 0,
+          tmdb: true
+        }))
+        .catch(error => {
+          console.error('Error fetching movie details:', error);
+          return null;
+        });
+    }
+    
+    // Initialize the app
+    init();
+  </script>
+</body>
+</html>
